@@ -1,0 +1,1256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NURDLE — Word Challenge</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Bebas+Neue&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #080810;
+  --surface: #10101e;
+  --surface2: #18182a;
+  --border: #252538;
+  --border2: #32324a;
+  --accent: #e2ff5a;
+  --accent2: #5affd4;
+  --danger: #ff5a6e;
+  --warn: #ffb05a;
+  --text: #eeeef8;
+  --text2: #7777a0;
+  --text3: #4a4a70;
+  --correct: #3dd68c;
+  --present: #f5c518;
+  --absent: #2a2a40;
+  --tile: 60px;
+  --gap: 5px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;}
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:'DM Sans',sans-serif;
+  min-height:100vh;
+  overflow-x:hidden;
+}
+
+/* ── SCREENS ── */
+.screen{display:none;min-height:100vh;flex-direction:column;}
+.screen.active{display:flex;}
+
+/* ── SPLASH ── */
+#splash{
+  align-items:center;
+  justify-content:center;
+  position:relative;
+  overflow:hidden;
+}
+.splash-bg{
+  position:absolute;inset:0;
+  background:
+    radial-gradient(ellipse 60% 50% at 50% 0%, rgba(226,255,90,0.07) 0%, transparent 70%),
+    radial-gradient(ellipse 40% 30% at 80% 80%, rgba(90,255,212,0.04) 0%, transparent 60%);
+  pointer-events:none;
+}
+.splash-grid{
+  position:absolute;inset:0;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px);
+  background-size:40px 40px;
+  pointer-events:none;
+}
+.splash-inner{text-align:center;z-index:1;padding:2rem;}
+.game-logo{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:clamp(80px,16vw,140px);
+  letter-spacing:18px;
+  color:var(--accent);
+  line-height:0.9;
+  animation:logoGlow 4s ease-in-out infinite alternate;
+}
+@keyframes logoGlow{
+  from{text-shadow:0 0 30px rgba(226,255,90,0.25);}
+  to{text-shadow:0 0 80px rgba(226,255,90,0.55),0 0 160px rgba(226,255,90,0.15);}
+}
+.game-tagline{
+  font-family:'Space Mono',monospace;
+  font-size:11px;
+  letter-spacing:7px;
+  color:var(--text3);
+  margin-top:6px;
+  text-transform:uppercase;
+}
+.name-wrap{margin-top:52px;}
+.field-label{
+  display:block;
+  font-family:'Space Mono',monospace;
+  font-size:10px;
+  letter-spacing:4px;
+  color:var(--text2);
+  text-transform:uppercase;
+  margin-bottom:10px;
+}
+.name-input{
+  background:var(--surface);
+  border:1px solid var(--border2);
+  color:var(--text);
+  font-family:'Space Mono',monospace;
+  font-size:20px;
+  padding:14px 24px;
+  border-radius:3px;
+  width:300px;
+  text-align:center;
+  letter-spacing:6px;
+  text-transform:uppercase;
+  outline:none;
+  transition:border-color 0.2s,box-shadow 0.2s;
+}
+.name-input:focus{
+  border-color:var(--accent);
+  box-shadow:0 0 0 3px rgba(226,255,90,0.1);
+}
+.name-input::placeholder{color:var(--text3);}
+.btn-play{
+  display:inline-flex;align-items:center;gap:10px;
+  background:var(--accent);
+  color:#080810;
+  font-family:'Space Mono',monospace;
+  font-size:13px;font-weight:700;
+  letter-spacing:3px;
+  padding:16px 44px;
+  border:none;border-radius:3px;
+  cursor:pointer;margin-top:22px;
+  text-transform:uppercase;
+  transition:transform 0.15s,box-shadow 0.2s;
+}
+.btn-play:hover{transform:translateY(-3px);box-shadow:0 12px 32px rgba(226,255,90,0.3);}
+.btn-play:active{transform:scale(0.97);}
+.splash-bottom{
+  margin-top:28px;
+  display:flex;gap:12px;justify-content:center;
+}
+.btn-ghost{
+  background:transparent;
+  color:var(--text2);
+  font-family:'Space Mono',monospace;
+  font-size:10px;letter-spacing:2px;
+  padding:9px 18px;
+  border:1px solid var(--border);
+  border-radius:3px;cursor:pointer;
+  text-transform:uppercase;
+  transition:border-color 0.2s,color 0.2s;
+}
+.btn-ghost:hover{border-color:var(--accent2);color:var(--accent2);}
+
+/* setup notice on splash */
+.setup-notice{
+  margin-top:20px;
+  font-family:'Space Mono',monospace;
+  font-size:10px;
+  color:var(--warn);
+  letter-spacing:1px;
+  padding:8px 16px;
+  border:1px solid rgba(255,176,90,0.3);
+  border-radius:3px;
+  display:inline-block;
+}
+
+/* ── CATEGORY ── */
+#category{align-items:center;justify-content:center;padding:2rem;}
+.screen-eyebrow{
+  font-family:'Space Mono',monospace;
+  font-size:10px;letter-spacing:5px;
+  color:var(--text3);text-transform:uppercase;
+  text-align:center;margin-bottom:6px;
+}
+.screen-heading{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:52px;letter-spacing:7px;
+  color:var(--text);text-align:center;
+  margin-bottom:44px;
+}
+.cat-grid{
+  display:flex;gap:14px;flex-wrap:wrap;
+  justify-content:center;max-width:720px;
+}
+.cat-card{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:8px;
+  padding:30px 32px;cursor:pointer;
+  text-align:center;min-width:180px;flex:1;
+  transition:border-color 0.25s,transform 0.2s;
+  position:relative;overflow:hidden;
+}
+.cat-card::before{
+  content:'';position:absolute;
+  inset:0;
+  background:linear-gradient(135deg,rgba(226,255,90,0.04) 0%,transparent 60%);
+  opacity:0;transition:opacity 0.25s;
+}
+.cat-card:hover{border-color:var(--accent);transform:translateY(-4px);}
+.cat-card:hover::before{opacity:1;}
+.cat-icon{font-size:34px;margin-bottom:14px;}
+.cat-name{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:26px;letter-spacing:3px;color:var(--text);
+}
+.cat-count{
+  font-family:'Space Mono',monospace;
+  font-size:10px;color:var(--text2);margin-top:6px;
+}
+
+/* ── GAME ── */
+#game{flex-direction:column;}
+.game-header{
+  display:flex;align-items:center;
+  justify-content:space-between;
+  padding:14px 22px;
+  border-bottom:1px solid var(--border);
+  background:var(--surface);flex-shrink:0;
+}
+.hdr-left{display:flex;align-items:center;gap:14px;}
+.hdr-logo{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:26px;letter-spacing:5px;color:var(--accent);
+}
+.cat-pill{
+  background:var(--surface2);border:1px solid var(--border);
+  border-radius:2px;padding:3px 9px;
+  font-family:'Space Mono',monospace;
+  font-size:9px;letter-spacing:2px;
+  color:var(--accent2);text-transform:uppercase;
+}
+.hdr-stats{display:flex;gap:22px;align-items:center;}
+.stat{text-align:right;}
+.stat-lbl{
+  font-family:'Space Mono',monospace;
+  font-size:8px;letter-spacing:2px;
+  color:var(--text3);text-transform:uppercase;
+}
+.stat-val{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:24px;letter-spacing:2px;
+  color:var(--text);line-height:1.1;
+}
+.stat-val.hi{color:var(--accent);}
+
+.game-body{
+  flex:1;display:flex;flex-direction:column;
+  align-items:center;padding:16px 14px 10px;
+  gap:12px;overflow-y:auto;
+}
+
+/* TIMER */
+.timer-wrap{width:100%;max-width:480px;}
+.timer-row{
+  display:flex;justify-content:space-between;
+  align-items:baseline;margin-bottom:5px;
+}
+.timer-lbl{
+  font-family:'Space Mono',monospace;
+  font-size:9px;letter-spacing:3px;
+  color:var(--text3);text-transform:uppercase;
+}
+.timer-num{
+  font-family:'Space Mono',monospace;
+  font-size:15px;font-weight:700;
+  color:var(--accent);
+  transition:color 0.3s;
+  min-width:50px;text-align:right;
+}
+.timer-num.warn{color:var(--warn);}
+.timer-num.hot{color:var(--danger);animation:timerPulse 0.5s ease infinite alternate;}
+@keyframes timerPulse{from{opacity:1;}to{opacity:0.5;}}
+.timer-track{
+  height:3px;background:var(--border);
+  border-radius:2px;overflow:hidden;
+}
+.timer-bar{
+  height:100%;background:var(--accent);
+  border-radius:2px;
+  transition:width 0.1s linear,background 0.3s;
+}
+.timer-bar.warn{background:var(--warn);}
+.timer-bar.hot{background:var(--danger);}
+
+/* MESSAGE */
+.game-msg{
+  font-family:'Space Mono',monospace;
+  font-size:11px;letter-spacing:2px;
+  color:var(--accent);text-transform:uppercase;
+  min-height:16px;text-align:center;
+}
+
+/* GRID */
+.wordle-grid{display:flex;flex-direction:column;gap:var(--gap);}
+.grid-row{display:flex;gap:var(--gap);}
+.tile{
+  width:var(--tile);height:var(--tile);
+  border:2px solid var(--border);
+  border-radius:3px;
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Bebas Neue',sans-serif;
+  font-size:30px;letter-spacing:1px;
+  color:var(--text);background:var(--surface);
+  transition:border-color 0.1s;
+  user-select:none;
+}
+.tile.filled{border-color:var(--border2);animation:pop 0.1s ease;}
+@keyframes pop{0%{transform:scale(1);}50%{transform:scale(1.13);}100%{transform:scale(1);}}
+.tile.flip{animation:flip 0.48s ease forwards;}
+@keyframes flip{
+  0%{transform:rotateX(0);}
+  49%{transform:rotateX(-90deg);}
+  50%{transform:rotateX(-90deg);}
+  100%{transform:rotateX(0);}
+}
+.tile.correct{background:var(--correct);border-color:var(--correct);color:#080810;}
+.tile.present{background:var(--present);border-color:var(--present);color:#080810;}
+.tile.absent{background:var(--absent);border-color:var(--absent);color:var(--text2);}
+.tile.shake{animation:shake 0.38s ease;}
+@keyframes shake{
+  0%,100%{transform:translateX(0);}
+  20%{transform:translateX(-7px);}
+  40%{transform:translateX(7px);}
+  60%{transform:translateX(-4px);}
+  80%{transform:translateX(4px);}
+}
+.tile.win-bounce{animation:winbounce 0.55s ease;}
+@keyframes winbounce{
+  0%,100%{transform:translateY(0);}
+  35%{transform:translateY(-18px);}
+  65%{transform:translateY(-7px);}
+}
+.tile.hint-revealed{
+  border-color:var(--accent) !important;
+  background:rgba(226,255,90,0.12) !important;
+  color:var(--accent) !important;
+  animation:hintPulse 0.7s ease;
+}
+@keyframes hintPulse{
+  0%{box-shadow:0 0 0 0 rgba(226,255,90,0.7);}
+  100%{box-shadow:0 0 0 18px rgba(226,255,90,0);}
+}
+
+/* LIFELINES */
+.lifelines{
+  width:100%;max-width:480px;
+  display:grid;grid-template-columns:repeat(4,1fr);
+  gap:7px;
+}
+.ll-btn{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:6px;padding:9px 6px;
+  cursor:pointer;text-align:center;
+  transition:border-color 0.2s,transform 0.15s,opacity 0.2s;
+  color:var(--text);
+  position:relative;
+}
+.ll-btn:hover:not(:disabled){border-color:var(--accent2);transform:translateY(-2px);}
+.ll-btn:disabled{opacity:0.25;cursor:not-allowed;transform:none;}
+.ll-icon{font-size:17px;margin-bottom:3px;}
+.ll-label{
+  font-family:'Space Mono',monospace;
+  font-size:8px;letter-spacing:1px;
+  color:var(--text2);text-transform:uppercase;
+  line-height:1.4;
+}
+.ll-cost{
+  font-family:'Space Mono',monospace;
+  font-size:8px;color:var(--danger);
+  margin-top:2px;
+}
+
+/* KEYBOARD */
+.keyboard{width:100%;max-width:480px;}
+.kb-row{display:flex;justify-content:center;gap:4px;margin-bottom:4px;}
+.key{
+  min-width:34px;height:50px;
+  border-radius:3px;border:none;
+  background:var(--surface2);
+  color:var(--text);
+  font-family:'Space Mono',monospace;
+  font-size:12px;font-weight:700;
+  cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  transition:background 0.18s,transform 0.08s;
+  padding:0 4px;flex:1;max-width:40px;
+  user-select:none;
+}
+.key.wide{max-width:58px;font-size:9px;letter-spacing:0;}
+.key:active{transform:scale(0.91);}
+.key.correct{background:var(--correct);color:#080810;}
+.key.present{background:var(--present);color:#080810;}
+.key.absent{background:#1c1c2c;color:var(--text3);}
+
+/* ── GAME OVER ── */
+#gameover{align-items:center;justify-content:center;padding:2rem;}
+.go-inner{text-align:center;max-width:420px;width:100%;}
+.go-title{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:76px;letter-spacing:8px;
+  line-height:1;color:var(--danger);
+}
+.go-title.timeout{color:var(--warn);}
+.go-reveal-word{
+  font-family:'Space Mono',monospace;
+  font-size:12px;color:var(--text2);
+  margin-top:10px;letter-spacing:2px;
+}
+.go-reveal-word span{color:var(--accent);letter-spacing:5px;font-weight:700;}
+.score-box{
+  margin:28px 0;
+  background:var(--surface);
+  border:1px solid var(--border2);
+  border-radius:8px;padding:28px 24px;
+}
+.final-score-lbl{
+  font-family:'Space Mono',monospace;
+  font-size:10px;letter-spacing:3px;
+  color:var(--text2);text-transform:uppercase;
+}
+.final-score-num{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:88px;letter-spacing:4px;
+  color:var(--accent);line-height:1;
+}
+.breakdown{
+  display:flex;justify-content:center;
+  gap:28px;margin-top:18px;flex-wrap:wrap;
+}
+.bd-item{text-align:center;}
+.bd-val{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:30px;color:var(--text);
+}
+.bd-lbl{
+  font-family:'Space Mono',monospace;
+  font-size:9px;color:var(--text2);
+  letter-spacing:1px;text-transform:uppercase;
+}
+.go-actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;}
+
+/* ── SCOREBOARD ── */
+#scoreboard{align-items:center;padding:2rem 1rem;}
+.sb-wrap{width:100%;max-width:580px;}
+.sb-table{width:100%;border-collapse:collapse;margin-top:4px;}
+.sb-table th{
+  font-family:'Space Mono',monospace;
+  font-size:9px;letter-spacing:2px;color:var(--text3);
+  text-transform:uppercase;padding:10px 14px;
+  text-align:left;border-bottom:1px solid var(--border);
+}
+.sb-table td{
+  padding:13px 14px;
+  border-bottom:1px solid rgba(37,37,56,0.6);
+  font-size:14px;
+}
+.sb-rank{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:24px;color:var(--text3);width:44px;
+}
+.sb-rank.g{color:var(--accent);}
+.sb-rank.s{color:#c0c0d8;}
+.sb-rank.b{color:#c8956a;}
+.sb-name{
+  font-family:'Space Mono',monospace;
+  font-weight:700;font-size:13px;letter-spacing:1px;
+}
+.sb-name.you{color:var(--accent);}
+.sb-score{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:24px;color:var(--text);
+}
+.sb-meta{
+  font-family:'Space Mono',monospace;
+  font-size:10px;color:var(--text2);
+}
+.sb-empty{
+  font-family:'Space Mono',monospace;
+  font-size:11px;color:var(--text2);
+  text-align:center;padding:40px 0;
+}
+.sb-loading{
+  font-family:'Space Mono',monospace;
+  font-size:11px;color:var(--text2);
+  text-align:center;padding:30px 0;
+  letter-spacing:2px;
+  animation:blink 1s ease infinite;
+}
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:0.3;}}
+.sb-error{
+  font-family:'Space Mono',monospace;
+  font-size:10px;color:var(--warn);
+  text-align:center;padding:20px;
+  border:1px solid rgba(255,176,90,0.25);
+  border-radius:4px;margin-top:12px;
+}
+
+/* DEFINITION POPUP */
+#def-popup{
+  position:fixed;inset:0;
+  background:rgba(8,8,16,0.88);
+  display:flex;align-items:center;justify-content:center;
+  z-index:200;opacity:0;pointer-events:none;
+  transition:opacity 0.2s;
+}
+#def-popup.show{opacity:1;pointer-events:all;}
+.def-card{
+  background:var(--surface);
+  border:1px solid var(--accent);
+  border-radius:8px;padding:36px;
+  max-width:380px;margin:1rem;
+  text-align:center;
+}
+.def-eyebrow{
+  font-family:'Space Mono',monospace;
+  font-size:9px;letter-spacing:4px;
+  color:var(--accent);text-transform:uppercase;
+  margin-bottom:16px;
+}
+.def-body{
+  font-size:17px;line-height:1.7;
+  color:var(--text);font-style:italic;
+}
+.def-close{
+  margin-top:22px;
+  font-family:'Space Mono',monospace;
+  font-size:10px;letter-spacing:2px;
+  color:var(--text2);cursor:pointer;
+  text-transform:uppercase;background:none;
+  border:1px solid var(--border2);
+  padding:8px 22px;border-radius:3px;
+  transition:border-color 0.2s,color 0.2s;
+}
+.def-close:hover{border-color:var(--accent2);color:var(--accent2);}
+
+/* TOAST */
+#toast{
+  position:fixed;top:72px;left:50%;
+  transform:translateX(-50%) translateY(-12px);
+  background:var(--text);color:var(--bg);
+  font-family:'Space Mono',monospace;
+  font-size:11px;letter-spacing:2px;
+  padding:9px 20px;border-radius:3px;
+  opacity:0;pointer-events:none;
+  transition:opacity 0.18s,transform 0.18s;
+  z-index:300;text-transform:uppercase;white-space:nowrap;
+}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+/* scrollbar */
+::-webkit-scrollbar{width:3px;}
+::-webkit-scrollbar-track{background:var(--bg);}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
+</style>
+</head>
+<body>
+
+<div id="toast"></div>
+
+<div id="def-popup">
+  <div class="def-card">
+    <div class="def-eyebrow">Definition</div>
+    <div class="def-body" id="def-text"></div>
+    <button class="def-close" onclick="closeDefPopup()">Got it</button>
+  </div>
+</div>
+
+<!-- ══ SPLASH ══ -->
+<div class="screen active" id="splash">
+  <div class="splash-bg"></div>
+  <div class="splash-grid"></div>
+  <div class="splash-inner">
+    <div class="game-logo">LEXIS</div>
+    <div class="game-tagline">Five-letter word challenge</div>
+    <div id="sheets-notice" class="setup-notice" style="display:none;">
+      ⚠ Scoreboard not configured — see setup guide
+    </div>
+    <div class="name-wrap">
+      <label class="field-label" for="player-name">Your name</label>
+      <input class="name-input" type="text" id="player-name" maxlength="16" placeholder="PLAYER" autocomplete="off">
+    </div>
+    <button class="btn-play" onclick="startFromSplash()">Play →</button>
+    <div class="splash-bottom">
+      <button class="btn-ghost" onclick="goScoreboard('splash')">Scoreboard</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ CATEGORY ══ -->
+<div class="screen" id="category">
+  <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2rem;">
+    <div class="screen-eyebrow">Choose a category</div>
+    <div class="screen-heading">PICK A TOPIC</div>
+    <div class="cat-grid" id="cat-grid"></div>
+  </div>
+</div>
+
+<!-- ══ GAME ══ -->
+<div class="screen" id="game">
+  <div class="game-header">
+    <div class="hdr-left">
+      <div class="hdr-logo">LEXIS</div>
+      <div class="cat-pill" id="active-cat">—</div>
+    </div>
+    <div class="hdr-stats">
+      <div class="stat">
+        <div class="stat-lbl">Score</div>
+        <div class="stat-val hi" id="hdr-score">0</div>
+      </div>
+      <div class="stat">
+        <div class="stat-lbl">Streak</div>
+        <div class="stat-val" id="hdr-streak">0</div>
+      </div>
+      <div class="stat">
+        <div class="stat-lbl">Word #</div>
+        <div class="stat-val" id="hdr-word">1</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="game-body">
+    <div class="timer-wrap">
+      <div class="timer-row">
+        <span class="timer-lbl">Time remaining</span>
+        <span class="timer-num" id="timer-num">2:00</span>
+      </div>
+      <div class="timer-track"><div class="timer-bar" id="timer-bar" style="width:100%"></div></div>
+    </div>
+
+    <div class="game-msg" id="game-msg"></div>
+    <div class="wordle-grid" id="wordle-grid"></div>
+
+    <div class="lifelines" id="lifelines">
+      <button class="ll-btn" id="ll-extra" onclick="useLifeline('extra')">
+        <div class="ll-icon">➕</div>
+        <div class="ll-label">Extra<br>Guess</div>
+        <div class="ll-cost">−50 pts</div>
+      </button>
+      <button class="ll-btn" id="ll-reveal" onclick="useLifeline('reveal')">
+        <div class="ll-icon">🔍</div>
+        <div class="ll-label">Reveal<br>Letter</div>
+        <div class="ll-cost">−50 pts</div>
+      </button>
+      <button class="ll-btn" id="ll-time" onclick="useLifeline('time')">
+        <div class="ll-icon">⏱</div>
+        <div class="ll-label">+60<br>Seconds</div>
+        <div class="ll-cost">−50 pts</div>
+      </button>
+      <button class="ll-btn" id="ll-def" onclick="useLifeline('definition')">
+        <div class="ll-icon">📖</div>
+        <div class="ll-label">Definition</div>
+        <div class="ll-cost">−50 pts</div>
+      </button>
+    </div>
+
+    <div class="keyboard" id="keyboard">
+      <div class="kb-row" id="kb-0"></div>
+      <div class="kb-row" id="kb-1"></div>
+      <div class="kb-row" id="kb-2"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ GAME OVER ══ -->
+<div class="screen" id="gameover">
+  <div style="flex:1;display:flex;align-items:center;justify-content:center;padding:2rem;">
+    <div class="go-inner">
+      <div class="go-title" id="go-title">GAME<br>OVER</div>
+      <div class="go-reveal-word" id="go-word"></div>
+      <div class="score-box">
+        <div class="final-score-lbl">Final Score</div>
+        <div class="final-score-num" id="go-score">0</div>
+        <div class="breakdown">
+          <div class="bd-item">
+            <div class="bd-val" id="go-words">0</div>
+            <div class="bd-lbl">Words</div>
+          </div>
+          <div class="bd-item">
+            <div class="bd-val" id="go-streak">0</div>
+            <div class="bd-lbl">Best Streak</div>
+          </div>
+          <div class="bd-item">
+            <div class="bd-val" id="go-cat">—</div>
+            <div class="bd-lbl">Category</div>
+          </div>
+        </div>
+      </div>
+      <div class="go-actions">
+        <button class="btn-play" onclick="playAgain()">Play Again →</button>
+        <button class="btn-ghost" onclick="goScoreboard('gameover')">Scoreboard</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SCOREBOARD ══ -->
+<div class="screen" id="scoreboard">
+  <div style="flex:1;display:flex;flex-direction:column;align-items:center;padding:2rem 1rem;">
+    <div class="sb-wrap">
+      <div class="screen-eyebrow">Rankings</div>
+      <div class="screen-heading" style="margin-bottom:24px;">SCOREBOARD</div>
+      <div id="sb-content"><div class="sb-loading">Loading scores...</div></div>
+      <div style="text-align:center;margin-top:24px;">
+        <button class="btn-ghost" onclick="leaveSB()">← Back</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ════════════════════════════════════════════════════════
+//  CONFIGURATION  — paste your Apps Script URL here
+// ════════════════════════════════════════════════════════
+const SHEETS_URL = 'https://script.google.com/macros/s/AKfycbxBygK6J3cO7ofdKdiPgAnW20HT8oWAMubPYoEKo1IwVOUx5RkLC1u6X2UOisqd6V9Odw/exec'; 
+
+// ════════════════════════════════════════════════════════
+//  WORD DATA
+// ════════════════════════════════════════════════════════
+const WORDS = [
+  {word:'CRANE',category:'Birds',definition:'A large, long-legged wading bird known for its elaborate courtship dances.'},
+  {word:'FINCH',category:'Birds',definition:'A small seed-eating songbird with a short, stout bill.'},
+  {word:'SWIFT',category:'Birds',definition:'A fast-flying migratory bird that spends most of its life airborne.'},
+  {word:'RAVEN',category:'Birds',definition:'A large, all-black bird famed for its intelligence and mimicry.'},
+  {word:'EGRET',category:'Birds',definition:'A graceful white heron that hunts fish in shallow waters.'},
+  {word:'LIVER',category:'Anatomy',definition:'The largest internal organ, responsible for detoxification and metabolism.'},
+  {word:'TIBIA',category:'Anatomy',definition:'The larger of the two bones in the lower leg, commonly called the shinbone.'},
+  {word:'FEMUR',category:'Anatomy',definition:'The thigh bone — the longest and strongest bone in the human body.'},
+  {word:'AORTA',category:'Anatomy',definition:'The main artery of the body, supplying oxygenated blood from the heart.'},
+  {word:'ILEUM',category:'Anatomy',definition:'The final section of the small intestine, where nutrients are absorbed.'},
+  {word:'ALGAE',category:'Marine Life',definition:'Simple aquatic organisms that photosynthesize but lack true roots or leaves.'},
+  {word:'CORAL',category:'Marine Life',definition:'Marine invertebrates that build calcium carbonate structures forming reefs.'},
+  {word:'OTTER',category:'Marine Life',definition:'A semi-aquatic mammal known for using tools to crack open shellfish.'},
+  {word:'PRAWN',category:'Marine Life',definition:'A small crustacean related to shrimp, found in salt and fresh water.'},
+  {word:'SQUID',category:'Marine Life',definition:'A fast-moving cephalopod with ten arms used to catch prey.'},
+];
+
+const CAT_ICONS = {Birds:'🦅',Anatomy:'🦴','Marine Life':'🌊'};
+
+// ════════════════════════════════════════════════════════
+//  STATE
+// ════════════════════════════════════════════════════════
+let G = {
+  player:'',
+  category:'',
+  pool:[],
+  used:[],
+  word:'',
+  definition:'',
+  row:0,
+  col:0,
+  maxRows:6,
+  guess:[],
+  active:false,
+  score:0,
+  wordNum:0,
+  streak:0,
+  bestStreak:0,
+  timerSecs:120,
+  timerInterval:null,
+  lifelines:{extra:false,reveal:false,time:false,definition:false},
+  lifelinePenalty:0, // penalty accumulated this word
+  revealedIdx:[],
+  prevScreen:'splash',
+};
+
+const KB_ROWS = [
+  ['Q','W','E','R','T','Y','U','I','O','P'],
+  ['A','S','D','F','G','H','J','K','L'],
+  ['ENTER','Z','X','C','V','B','N','M','⌫'],
+];
+const WORD_MAX_TIME = 120;
+
+// ════════════════════════════════════════════════════════
+//  BOOT
+// ════════════════════════════════════════════════════════
+window.onload = () => {
+  if (!SHEETS_URL) document.getElementById('sheets-notice').style.display = 'inline-block';
+  document.getElementById('player-name').addEventListener('keydown', e => {
+    if (e.key === 'Enter') startFromSplash();
+  });
+  document.addEventListener('keydown', onKeyDown);
+};
+
+// ════════════════════════════════════════════════════════
+//  SCREEN NAV
+// ════════════════════════════════════════════════════════
+function show(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+// ════════════════════════════════════════════════════════
+//  SPLASH → CATEGORY
+// ════════════════════════════════════════════════════════
+function startFromSplash() {
+  const n = document.getElementById('player-name').value.trim().toUpperCase();
+  if (!n) { toast('Enter a name first'); return; }
+  G.player = n;
+  pickCategories();
+}
+
+function pickCategories() {
+  const allCats = [...new Set(WORDS.map(w => w.category))];
+  const picks = allCats.sort(() => Math.random()-0.5).slice(0, Math.min(3, allCats.length));
+  const grid = document.getElementById('cat-grid');
+  grid.innerHTML = '';
+  picks.forEach(cat => {
+    const count = WORDS.filter(w => w.category === cat).length;
+    const card = document.createElement('div');
+    card.className = 'cat-card';
+    card.innerHTML = `
+      <div class="cat-icon">${CAT_ICONS[cat]||'📚'}</div>
+      <div class="cat-name">${cat}</div>
+      <div class="cat-count">${count} words</div>`;
+    card.onclick = () => chooseCategory(cat);
+    grid.appendChild(card);
+  });
+  show('category');
+}
+
+function chooseCategory(cat) {
+  G.category = cat;
+  G.pool = WORDS.filter(w => w.category === cat);
+  G.used = [];
+  G.score = 0; G.wordNum = 0; G.streak = 0; G.bestStreak = 0;
+  document.getElementById('active-cat').textContent = cat;
+  show('game');
+  buildKeyboard();
+  nextWord();
+}
+
+// ════════════════════════════════════════════════════════
+//  WORD SETUP
+// ════════════════════════════════════════════════════════
+function nextWord() {
+  let available = G.pool.filter(w => !G.used.includes(w.word));
+  if (!available.length) { G.used = []; available = [...G.pool]; }
+  const pick = available[Math.floor(Math.random() * available.length)];
+  G.word = pick.word;
+  G.definition = pick.definition;
+  G.used.push(G.word);
+
+  G.row = 0; G.col = 0; G.maxRows = 6;
+  G.guess = []; G.active = true;
+  G.lifelines = {extra:false,reveal:false,time:false,definition:false};
+  G.lifelinePenalty = 0;
+  G.revealedIdx = [];
+
+  G.wordNum++;
+  resetLifelineUI();
+  buildGrid();
+  clearMsg();
+  updateHeader();
+  startTimer();
+}
+
+// ════════════════════════════════════════════════════════
+//  TIMER
+// ════════════════════════════════════════════════════════
+function startTimer() {
+  stopTimer();
+  G.timerSecs = WORD_MAX_TIME;
+  renderTimer();
+  G.timerInterval = setInterval(() => {
+    G.timerSecs -= 0.1;
+    if (G.timerSecs <= 0) {
+      G.timerSecs = 0;
+      renderTimer();
+      stopTimer();
+      onTimeout();
+    } else {
+      renderTimer();
+    }
+  }, 100);
+}
+
+function stopTimer() {
+  if (G.timerInterval) { clearInterval(G.timerInterval); G.timerInterval = null; }
+}
+
+function renderTimer() {
+  const s = Math.ceil(G.timerSecs);
+  const mins = Math.floor(s / 60);
+  const secs = s % 60;
+  const display = mins + ':' + String(secs).padStart(2,'0');
+  const numEl = document.getElementById('timer-num');
+  const barEl = document.getElementById('timer-bar');
+  numEl.textContent = display;
+  const pct = Math.max(0, (G.timerSecs / WORD_MAX_TIME) * 100);
+  barEl.style.width = pct + '%';
+  const warn = G.timerSecs < 30;
+  const hot  = G.timerSecs < 15;
+  numEl.className = 'timer-num' + (hot?' hot':warn?' warn':'');
+  barEl.className  = 'timer-bar'  + (hot?' hot':warn?' warn':'');
+}
+
+// ════════════════════════════════════════════════════════
+//  GRID
+// ════════════════════════════════════════════════════════
+function buildGrid() {
+  const g = document.getElementById('wordle-grid');
+  g.innerHTML = '';
+  for (let r = 0; r < G.maxRows; r++) addGridRow(r);
+}
+
+function addGridRow(r) {
+  const g = document.getElementById('wordle-grid');
+  const row = document.createElement('div');
+  row.className = 'grid-row'; row.id = 'row-'+r;
+  for (let c = 0; c < 5; c++) {
+    const t = document.createElement('div');
+    t.className = 'tile'; t.id = `t-${r}-${c}`;
+    row.appendChild(t);
+  }
+  g.appendChild(row);
+}
+
+function tile(r, c) { return document.getElementById(`t-${r}-${c}`); }
+
+// ════════════════════════════════════════════════════════
+//  KEYBOARD
+// ════════════════════════════════════════════════════════
+function buildKeyboard() {
+  KB_ROWS.forEach((row, i) => {
+    const el = document.getElementById('kb-'+i);
+    el.innerHTML = '';
+    row.forEach(k => {
+      const b = document.createElement('button');
+      b.className = 'key' + (k.length>1?' wide':'');
+      b.textContent = k; b.id = 'key-'+k;
+      b.onclick = () => handleKey(k);
+      el.appendChild(b);
+    });
+  });
+}
+
+function updateKeyboard(guess, result) {
+  const pri = {correct:3,present:2,absent:1};
+  guess.forEach((l,i) => {
+    const k = document.getElementById('key-'+l);
+    if (!k) return;
+    const cur = k.classList.contains('correct')?'correct':k.classList.contains('present')?'present':k.classList.contains('absent')?'absent':null;
+    if (!cur || pri[result[i]] > pri[cur]) {
+      k.classList.remove('correct','present','absent');
+      k.classList.add(result[i]);
+    }
+  });
+}
+
+// ════════════════════════════════════════════════════════
+//  INPUT
+// ════════════════════════════════════════════════════════
+function onKeyDown(e) {
+  if (!G.active) return;
+  if (document.querySelector('.screen.active')?.id !== 'game') return;
+  if (document.getElementById('def-popup').classList.contains('show')) return;
+  if (e.key === 'Enter') handleKey('ENTER');
+  else if (e.key === 'Backspace') handleKey('⌫');
+  else if (/^[a-zA-Z]$/.test(e.key)) handleKey(e.key.toUpperCase());
+}
+
+function handleKey(k) {
+  if (!G.active) return;
+  if (k === '⌫') {
+    if (G.col > 0) {
+      G.col--;
+      // don't delete a hint-revealed tile
+      if (G.revealedIdx.includes(G.col)) { G.col++; return; }
+      G.guess.pop();
+      const t = tile(G.row, G.col);
+      t.textContent = ''; t.classList.remove('filled');
+    }
+  } else if (k === 'ENTER') {
+    submitGuess();
+  } else if (G.col < 5) {
+    const t = tile(G.row, G.col);
+    t.textContent = k; t.classList.add('filled');
+    G.guess.push(k);
+    G.col++;
+  }
+}
+
+// ════════════════════════════════════════════════════════
+//  SUBMIT
+// ════════════════════════════════════════════════════════
+function submitGuess() {
+  if (G.col < 5) { setMsg('Not enough letters'); shakeRow(G.row); return; }
+  const guess = [...G.guess];
+  const result = evaluate(guess, G.word);
+  revealRow(G.row, guess, result, () => {
+    updateKeyboard(guess, result);
+    if (result.every(r => r==='correct')) {
+      onWin(guess);
+    } else {
+      G.row++; G.col = 0; G.guess = [];
+      if (G.row >= G.maxRows) onLoss();
+    }
+  });
+}
+
+function evaluate(guess, word) {
+  const res = Array(5).fill('absent');
+  const wArr = word.split('');
+  const gArr = [...guess];
+  const used = Array(5).fill(false);
+  for (let i=0;i<5;i++) if (gArr[i]===wArr[i]) { res[i]='correct'; used[i]=true; gArr[i]=null; }
+  for (let i=0;i<5;i++) {
+    if (gArr[i]===null) continue;
+    for (let j=0;j<5;j++) {
+      if (!used[j] && gArr[i]===wArr[j]) { res[i]='present'; used[j]=true; break; }
+    }
+  }
+  return res;
+}
+
+function revealRow(r, guess, result, cb) {
+  const delay = 340;
+  result.forEach((res,i) => {
+    setTimeout(() => {
+      const t = tile(r,i);
+      t.classList.add('flip');
+      setTimeout(() => {
+        t.classList.remove('correct','present','absent','hint-revealed');
+        t.classList.add(res);
+      }, 170);
+      if (i===4) setTimeout(cb, delay);
+    }, i*delay);
+  });
+}
+
+// ════════════════════════════════════════════════════════
+//  WIN / LOSS / TIMEOUT
+// ════════════════════════════════════════════════════════
+function onWin(guess) {
+  stopTimer();
+  G.active = false;
+  G.streak++;
+  if (G.streak > G.bestStreak) G.bestStreak = G.streak;
+
+  const attemptsLeft = G.maxRows - G.row - 1;
+  const timeLeft     = Math.floor(G.timerSecs);
+  const basePoints   = 100;
+  const attemptBonus = attemptsLeft * 50;
+  const timeBonus    = timeLeft;
+  const raw          = basePoints + attemptBonus + timeBonus - G.lifelinePenalty;
+  const wordScore    = Math.max(0, raw);
+  G.score += wordScore;
+
+  setTimeout(() => {
+    [0,1,2,3,4].forEach((c,i) => {
+      setTimeout(() => tile(G.row,c)?.classList.add('win-bounce'), i*80);
+    });
+  }, 100);
+
+  setMsg(`+${wordScore} pts  ·  ${attemptsLeft} guesses left  ·  ${timeLeft}s remaining`);
+  updateHeader();
+
+  setTimeout(() => { clearMsg(); nextWord(); }, 2400);
+}
+
+function onLoss() {
+  stopTimer();
+  G.active = false;
+  G.streak = 0;
+  endGame(false);
+}
+
+function onTimeout() {
+  if (!G.active) return;
+  G.active = false;
+  G.streak = 0;
+  endGame(true);
+}
+
+async function endGame(timedOut) {
+  stopTimer();
+  const goTitle = document.getElementById('go-title');
+  goTitle.textContent = timedOut ? 'TIME\nUP' : 'GAME\nOVER';
+  goTitle.className = 'go-title' + (timedOut?' timeout':'');
+  document.getElementById('go-word').innerHTML = `The word was <span>${G.word}</span>`;
+  document.getElementById('go-score').textContent = G.score;
+  document.getElementById('go-words').textContent = G.wordNum - 1;
+  document.getElementById('go-streak').textContent = G.bestStreak;
+  document.getElementById('go-cat').textContent = G.category;
+  show('gameover');
+  await submitScore();
+}
+
+// ════════════════════════════════════════════════════════
+//  LIFELINES
+// ════════════════════════════════════════════════════════
+function useLifeline(type) {
+  if (!G.active) return;
+  if (G.lifelines[type]) { toast('Already used this word!'); return; }
+  G.lifelines[type] = true;
+  G.lifelinePenalty += 50;
+
+  const btnId = {extra:'ll-extra',reveal:'ll-reveal',time:'ll-time',definition:'ll-def'}[type];
+  const btn = document.getElementById(btnId);
+  btn.disabled = true;
+
+  if (type === 'extra') {
+    addGridRow(G.maxRows);
+    G.maxRows++;
+    toast('+1 guess row added  −50 pts');
+
+  } else if (type === 'reveal') {
+    const unrevealed = [0,1,2,3,4].filter(i => !G.revealedIdx.includes(i));
+    if (!unrevealed.length) { toast('All letters already revealed'); G.lifelines[type]=false; btn.disabled=false; G.lifelinePenalty-=50; return; }
+    const idx = unrevealed[Math.floor(Math.random()*unrevealed.length)];
+    G.revealedIdx.push(idx);
+    const t = tile(G.row, idx);
+    t.textContent = G.word[idx];
+    t.classList.add('filled','hint-revealed');
+    // Inject into guess array at right position
+    while (G.guess.length <= idx) G.guess.push(null);
+    G.guess[idx] = G.word[idx];
+    // advance col past revealed if needed
+    if (G.col === idx) G.col = idx + 1;
+    toast(`Position ${idx+1} = ${G.word[idx]}  −50 pts`);
+
+  } else if (type === 'time') {
+    G.timerSecs = Math.min(G.timerSecs + 60, WORD_MAX_TIME);
+    renderTimer();
+    toast('+60 seconds  −50 pts');
+
+  } else if (type === 'definition') {
+    document.getElementById('def-text').textContent = G.definition;
+    document.getElementById('def-popup').classList.add('show');
+    toast('Definition revealed  −50 pts');
+  }
+}
+
+function resetLifelineUI() {
+  ['ll-extra','ll-reveal','ll-time','ll-def'].forEach(id => {
+    const b = document.getElementById(id);
+    b.disabled = false;
+    b.classList.remove('used');
+  });
+}
+
+function closeDefPopup() {
+  document.getElementById('def-popup').classList.remove('show');
+}
+
+// ════════════════════════════════════════════════════════
+//  SCOREBOARD — Google Sheets
+// ════════════════════════════════════════════════════════
+async function submitScore() {
+  if (!SHEETS_URL) return;
+  try {
+    await fetch(SHEETS_URL, {
+      method:'POST',
+      mode:'no-cors',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        action:'submit',
+        name: G.player,
+        score: G.score,
+        words: G.wordNum - 1,
+        streak: G.bestStreak,
+        category: G.category,
+        date: new Date().toLocaleDateString('en-NZ'),
+      })
+    });
+  } catch(e) { console.warn('Score submit failed', e); }
+}
+
+async function loadScores() {
+  if (!SHEETS_URL) return null;
+  try {
+    const r = await fetch(SHEETS_URL + '?action=scores', {cache:'no-store'});
+    const data = await r.json();
+    return data;
+  } catch(e) { return null; }
+}
+
+let sbFrom = 'splash';
+async function goScoreboard(from) {
+  sbFrom = from;
+  show('scoreboard');
+  const el = document.getElementById('sb-content');
+  el.innerHTML = '<div class="sb-loading">Loading scores...</div>';
+  const scores = await loadScores();
+  renderScoreboard(scores);
+}
+
+function renderScoreboard(scores) {
+  const el = document.getElementById('sb-content');
+  if (!SHEETS_URL) {
+    el.innerHTML = '<div class="sb-error">Scoreboard not configured.<br>Add your Apps Script URL to the SHEETS_URL variable in the game code.</div>';
+    return;
+  }
+  if (!scores) {
+    el.innerHTML = '<div class="sb-error">Could not load scores.<br>Check your Apps Script URL is correct and the script is deployed.</div>';
+    return;
+  }
+  if (!scores.length) {
+    el.innerHTML = '<div class="sb-empty">No scores yet — be the first!</div>';
+    return;
+  }
+  const rankClass = i => i===0?'g':i===1?'s':i===2?'b':'';
+  const rows = scores.map((s,i) => {
+    const isYou = s.name === G.player;
+    return `<tr>
+      <td class="sb-rank ${rankClass(i)}">${i+1}</td>
+      <td class="sb-name ${isYou?'you':''}">${s.name}${isYou?' ◀':''}</td>
+      <td class="sb-score">${s.score}</td>
+      <td class="sb-meta">${s.words} words · ${s.streak} streak</td>
+    </tr>`;
+  }).join('');
+  el.innerHTML = `<table class="sb-table">
+    <thead><tr>
+      <th>#</th><th>Player</th><th>Best Score</th><th>Stats</th>
+    </tr></thead>
+    <tbody>${rows}</tbody>
+  </table>`;
+}
+
+function leaveSB() { show(sbFrom); }
+
+// ════════════════════════════════════════════════════════
+//  PLAY AGAIN
+// ════════════════════════════════════════════════════════
+function playAgain() {
+  pickCategories();
+}
+
+// ════════════════════════════════════════════════════════
+//  UTILS
+// ════════════════════════════════════════════════════════
+function updateHeader() {
+  document.getElementById('hdr-score').textContent = G.score;
+  document.getElementById('hdr-streak').textContent = G.streak;
+  document.getElementById('hdr-word').textContent = G.wordNum;
+}
+
+function setMsg(m) { document.getElementById('game-msg').textContent = m; }
+function clearMsg() { document.getElementById('game-msg').textContent = ''; }
+
+function shakeRow(r) {
+  for (let c=0;c<5;c++) {
+    const t = tile(r,c);
+    t.classList.remove('shake');
+    void t.offsetWidth;
+    t.classList.add('shake');
+  }
+}
+
+let toastT = null;
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  if (toastT) clearTimeout(toastT);
+  toastT = setTimeout(() => el.classList.remove('show'), 2200);
+}
+</script>
+</body>
+</html>
