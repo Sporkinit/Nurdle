@@ -30,6 +30,7 @@
 html,body{height:100%;}
 body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;overflow-x:hidden;}
 .screen{display:none;min-height:100vh;flex-direction:column;}
+#game{height:100vh;min-height:unset;overflow:hidden;}
 .screen.active{display:flex;}
 
 /* SPLASH */
@@ -177,6 +178,36 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min
 #toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
 ::-webkit-scrollbar{width:3px;}::-webkit-scrollbar-track{background:var(--bg);}::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
 
+
+/* ── LAPTOP / SHORT SCREENS ── */
+@media (max-height: 820px) and (min-width: 481px) {
+  :root { --tile: 52px; --gap: 4px; }
+  .game-body { padding: 8px 14px 6px; gap: 7px; }
+  .game-header { padding: 8px 22px; }
+  .stat-val { font-size: 20px; }
+  .timer-lbl { font-size: 8px; }
+  .timer-num { font-size: 13px; }
+  .timer-row { margin-bottom: 3px; }
+  .tile { font-size: 26px; }
+  .ll-btn { padding: 6px 6px; }
+  .ll-icon { font-size: 15px; margin-bottom: 2px; }
+  .ll-label { font-size: 7px; }
+  .ll-cost  { font-size: 7px; }
+  .key { height: 42px; }
+  .kb-row { margin-bottom: 3px; }
+  .game-msg { min-height: 12px; font-size: 10px; }
+}
+
+@media (max-height: 680px) and (min-width: 481px) {
+  :root { --tile: 44px; --gap: 3px; }
+  .game-body { padding: 6px 14px 4px; gap: 5px; }
+  .game-header { padding: 6px 22px; }
+  .stat-val { font-size: 18px; }
+  .timer-row { margin-bottom: 2px; }
+  .tile { font-size: 22px; }
+  .key { height: 38px; font-size: 11px; }
+  .kb-row { gap: 3px; margin-bottom: 2px; }
+}
 /* ── MOBILE ── */
 @media (max-width: 480px) {
   /* Shrink tiles so grid fits */
