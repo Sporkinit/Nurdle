@@ -2911,7 +2911,7 @@ function nextWord() {
   G.row = 0; G.col = 0; G.maxRows = 6;
   G.guess = Array(5).fill(''); G.active = true;
   G.lifelines = {extra:false,reveal:false,time:false,definition:false};
-  G.lifelinePenalty = 0; G.revealedIdx = []; G.correctIdx = [];
+  G.lifelinePenalty = 0; G.lifelineTimeAdded = 0; G.lifelineExtraRows = 0; G.revealedIdx = []; G.correctIdx = [];
   G.warningSounding = false;
   G.wordNum++;
   resetLifelineUI(); resetKeyboard(); buildGrid(); clearMsg(); hideBreakdown(); updateHeader();
@@ -3039,7 +3039,7 @@ function revealRow(r,guess,result,cb) {
 function onWin() {
   stopTimer(); // also kills warning sound
   G.active=false; G.streak++; if(G.streak>G.bestStreak) G.bestStreak=G.streak;
-  const attemptsLeft=G.maxRows-G.row-1, timeLeft=Math.floor(G.timerSecs);
+  const attemptsLeft=(G.maxRows-G.lifelineExtraRows)-G.row-1, timeLeft=Math.floor(G.timerSecs)-G.lifelineTimeAdded;
   const base=100, attemptBonus=attemptsLeft*30, timeBonus=timeLeft;
   const wordScore=Math.max(0,base+attemptBonus+timeBonus-G.lifelinePenalty);
   G.score+=wordScore;
@@ -3091,7 +3091,7 @@ function useLifeline(type) {
   const btnEl=document.getElementById(btnId);btnEl.disabled=true;btnEl.classList.add('used-this-word');
 
   if(type==='extra') {
-    addGridRow(G.maxRows); G.maxRows++; toast(`+1 guess row  \u2212${cost} pts`);
+    addGridRow(G.maxRows); G.maxRows++; G.lifelineExtraRows++; toast(`+1 guess row  \u2212${cost} pts`);
 
   } else if(type==='reveal') {
     // FIX: exclude positions already correct across all previous guesses AND already hint-revealed
@@ -3109,7 +3109,7 @@ function useLifeline(type) {
     toast(`Position ${idx+1} = ${G.word[idx]}  \u2212${cost} pts`);
 
   } else if(type==='time') {
-    G.timerSecs=Math.min(G.timerSecs+60,WORD_MAX_TIME);
+    const before=G.timerSecs; G.timerSecs=Math.min(G.timerSecs+60,WORD_MAX_TIME); G.lifelineTimeAdded+=Math.round(G.timerSecs-before);
     if(G.timerSecs>10&&G.warningSounding){sfxStop('warning');G.warningSounding=false;}
     renderTimer(); toast(`+60 seconds  \u2212${cost} pts`);
 
