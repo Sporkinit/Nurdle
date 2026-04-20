@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>NURDLE — Word Challenge</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Bebas+Neue&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
@@ -176,6 +176,57 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min
 #toast{position:fixed;top:72px;left:50%;transform:translateX(-50%) translateY(-12px);background:var(--text);color:var(--bg);font-family:'Space Mono',monospace;font-size:11px;letter-spacing:2px;padding:9px 20px;border-radius:3px;opacity:0;pointer-events:none;transition:opacity 0.18s,transform 0.18s;z-index:300;text-transform:uppercase;white-space:nowrap;}
 #toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
 ::-webkit-scrollbar{width:3px;}::-webkit-scrollbar-track{background:var(--bg);}::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
+
+/* ── MOBILE ── */
+@media (max-width: 480px) {
+  /* Shrink tiles so grid fits */
+  :root { --tile: 46px; --gap: 4px; }
+
+  /* Header tighter */
+  .game-header { padding: 10px 12px; }
+  .hdr-logo { font-size: 20px; }
+  .stat-val { font-size: 18px; }
+  .stat-lbl { font-size: 7px; }
+  .hdr-stats { gap: 14px; }
+
+  /* Body padding reduced */
+  .game-body { padding: 8px 8px 6px; gap: 7px; }
+
+  /* Timer compact */
+  .timer-wrap { margin-bottom: 0; }
+  .timer-lbl { font-size: 8px; }
+  .timer-num { font-size: 12px; }
+
+  /* Message smaller */
+  .game-msg { font-size: 9px; min-height: 12px; }
+
+  /* Lifeline buttons compact */
+  .lifelines { gap: 5px; }
+  .ll-btn { padding: 7px 4px; border-radius: 5px; }
+  .ll-icon { font-size: 15px; margin-bottom: 2px; }
+  .ll-label { font-size: 7px; }
+  .ll-cost { font-size: 7px; }
+
+  /* Keyboard — fill full width, taller keys */
+  .keyboard { width: 100%; max-width: 100%; padding: 0 2px; }
+  .kb-row { gap: 3px; margin-bottom: 3px; }
+  .key {
+    height: 52px;
+    min-width: 0;
+    max-width: none;
+    font-size: 13px;
+    border-radius: 4px;
+    flex: 1;
+  }
+  .key.wide {
+    flex: 1.5;
+    font-size: 10px;
+    max-width: none;
+  }
+
+  /* Tile font smaller to match smaller tile */
+  .tile { font-size: 22px; }
+}
 </style>
 </head>
 <body>
@@ -2812,7 +2863,7 @@ let G = {
 const KB_ROWS = [
   ['Q','W','E','R','T','Y','U','I','O','P'],
   ['A','S','D','F','G','H','J','K','L'],
-  ['ENTER','Z','X','C','V','B','N','M','⌫'],
+  ['⌫','Z','X','C','V','B','N','M','ENTER'],
 ];
 const WORD_MAX_TIME = 120;
 
