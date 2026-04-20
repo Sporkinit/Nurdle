@@ -145,19 +145,6 @@ body{
 }
 .btn-ghost:hover{border-color:var(--accent2);color:var(--accent2);}
 
-/* setup notice on splash */
-.setup-notice{
-  margin-top:20px;
-  font-family:'Space Mono',monospace;
-  font-size:10px;
-  color:var(--warn);
-  letter-spacing:1px;
-  padding:8px 16px;
-  border:1px solid rgba(255,176,90,0.3);
-  border-radius:3px;
-  display:inline-block;
-}
-
 /* ── CATEGORY ── */
 #category{align-items:center;justify-content:center;padding:2rem;}
 .screen-eyebrow{
@@ -283,6 +270,27 @@ body{
   font-size:11px;letter-spacing:2px;
   color:var(--accent);text-transform:uppercase;
   min-height:16px;text-align:center;
+}
+
+/* DEFINITION BANNER — stays on screen until next word */
+#def-banner{
+  display:none;
+  width:100%;max-width:480px;
+  background:rgba(226,255,90,0.06);
+  border:1px solid rgba(226,255,90,0.25);
+  border-radius:6px;
+  padding:10px 14px;
+}
+#def-banner.show{display:block;}
+.def-banner-label{
+  font-family:'Space Mono',monospace;
+  font-size:8px;letter-spacing:3px;
+  color:var(--accent);text-transform:uppercase;
+  margin-bottom:4px;
+}
+.def-banner-text{
+  font-size:13px;line-height:1.5;
+  color:var(--text2);font-style:italic;
 }
 
 /* GRID */
@@ -491,44 +499,6 @@ body{
   border-radius:4px;margin-top:12px;
 }
 
-/* DEFINITION POPUP */
-#def-popup{
-  position:fixed;inset:0;
-  background:rgba(8,8,16,0.88);
-  display:flex;align-items:center;justify-content:center;
-  z-index:200;opacity:0;pointer-events:none;
-  transition:opacity 0.2s;
-}
-#def-popup.show{opacity:1;pointer-events:all;}
-.def-card{
-  background:var(--surface);
-  border:1px solid var(--accent);
-  border-radius:8px;padding:36px;
-  max-width:380px;margin:1rem;
-  text-align:center;
-}
-.def-eyebrow{
-  font-family:'Space Mono',monospace;
-  font-size:9px;letter-spacing:4px;
-  color:var(--accent);text-transform:uppercase;
-  margin-bottom:16px;
-}
-.def-body{
-  font-size:17px;line-height:1.7;
-  color:var(--text);font-style:italic;
-}
-.def-close{
-  margin-top:22px;
-  font-family:'Space Mono',monospace;
-  font-size:10px;letter-spacing:2px;
-  color:var(--text2);cursor:pointer;
-  text-transform:uppercase;background:none;
-  border:1px solid var(--border2);
-  padding:8px 22px;border-radius:3px;
-  transition:border-color 0.2s,color 0.2s;
-}
-.def-close:hover{border-color:var(--accent2);color:var(--accent2);}
-
 /* TOAST */
 #toast{
   position:fixed;top:72px;left:50%;
@@ -553,24 +523,13 @@ body{
 
 <div id="toast"></div>
 
-<div id="def-popup">
-  <div class="def-card">
-    <div class="def-eyebrow">Definition</div>
-    <div class="def-body" id="def-text"></div>
-    <button class="def-close" onclick="closeDefPopup()">Got it</button>
-  </div>
-</div>
-
 <!-- ══ SPLASH ══ -->
 <div class="screen active" id="splash">
   <div class="splash-bg"></div>
   <div class="splash-grid"></div>
   <div class="splash-inner">
-    <div class="game-logo">LEXIS</div>
+    <div class="game-logo">NURDLE</div>
     <div class="game-tagline">Five-letter word challenge</div>
-    <div id="sheets-notice" class="setup-notice" style="display:none;">
-      ⚠ Scoreboard not configured — see setup guide
-    </div>
     <div class="name-wrap">
       <label class="field-label" for="player-name">Your name</label>
       <input class="name-input" type="text" id="player-name" maxlength="16" placeholder="PLAYER" autocomplete="off">
@@ -595,7 +554,7 @@ body{
 <div class="screen" id="game">
   <div class="game-header">
     <div class="hdr-left">
-      <div class="hdr-logo">LEXIS</div>
+      <div class="hdr-logo">NURDLE</div>
       <div class="cat-pill" id="active-cat">—</div>
     </div>
     <div class="hdr-stats">
@@ -624,28 +583,35 @@ body{
     </div>
 
     <div class="game-msg" id="game-msg"></div>
+
+    <!-- Definition banner — shown inline when definition lifeline used -->
+    <div id="def-banner">
+      <div class="def-banner-label">Definition</div>
+      <div class="def-banner-text" id="def-banner-text"></div>
+    </div>
+
     <div class="wordle-grid" id="wordle-grid"></div>
 
     <div class="lifelines" id="lifelines">
       <button class="ll-btn" id="ll-extra" onclick="useLifeline('extra')">
         <div class="ll-icon">➕</div>
         <div class="ll-label">Extra<br>Guess</div>
-        <div class="ll-cost">−50 pts</div>
+        <div class="ll-cost">−30 pts</div>
       </button>
       <button class="ll-btn" id="ll-reveal" onclick="useLifeline('reveal')">
         <div class="ll-icon">🔍</div>
         <div class="ll-label">Reveal<br>Letter</div>
-        <div class="ll-cost">−50 pts</div>
+        <div class="ll-cost">−60 pts</div>
       </button>
       <button class="ll-btn" id="ll-time" onclick="useLifeline('time')">
         <div class="ll-icon">⏱</div>
         <div class="ll-label">+60<br>Seconds</div>
-        <div class="ll-cost">−50 pts</div>
+        <div class="ll-cost">−30 pts</div>
       </button>
       <button class="ll-btn" id="ll-def" onclick="useLifeline('definition')">
         <div class="ll-icon">📖</div>
         <div class="ll-label">Definition</div>
-        <div class="ll-cost">−50 pts</div>
+        <div class="ll-cost">−60 pts</div>
       </button>
     </div>
 
@@ -705,9 +671,12 @@ body{
 
 <script>
 // ════════════════════════════════════════════════════════
-//  CONFIGURATION  — paste your Apps Script URL here
+//  CONFIGURATION
 // ════════════════════════════════════════════════════════
-const SHEETS_URL = 'https://script.google.com/macros/s/AKfycbxBygK6J3cO7ofdKdiPgAnW20HT8oWAMubPYoEKo1IwVOUx5RkLC1u6X2UOisqd6V9Odw/exec'; 
+const SHEETS_URL = 'https://script.google.com/macros/s/AKfycbxBygK6J3cO7ofdKdiPgAnW20HT8oWAMubPYoEKo1IwVOUx5RkLC1u6X2UOisqd6V9Odw/exec';
+
+// Lifeline point costs
+const LL_COST = { extra: 30, time: 30, reveal: 60, definition: 60 };
 
 // ════════════════════════════════════════════════════════
 //  WORD DATA
@@ -745,18 +714,18 @@ let G = {
   row:0,
   col:0,
   maxRows:6,
-  guess:[],
+  guess:Array(5).fill(''),
   active:false,
   score:0,
   wordNum:0,
   streak:0,
   bestStreak:0,
   timerSecs:120,
+  timerStart:null,      // wall-clock time when timer started
   timerInterval:null,
   lifelines:{extra:false,reveal:false,time:false,definition:false},
-  lifelinePenalty:0, // penalty accumulated this word
+  lifelinePenalty:0,
   revealedIdx:[],
-  prevScreen:'splash',
 };
 
 const KB_ROWS = [
@@ -770,11 +739,28 @@ const WORD_MAX_TIME = 120;
 //  BOOT
 // ════════════════════════════════════════════════════════
 window.onload = () => {
-  if (!SHEETS_URL) document.getElementById('sheets-notice').style.display = 'inline-block';
   document.getElementById('player-name').addEventListener('keydown', e => {
     if (e.key === 'Enter') startFromSplash();
   });
   document.addEventListener('keydown', onKeyDown);
+
+  // Visibility change — keep timer accurate by recalculating from wall clock
+  document.addEventListener('visibilitychange', () => {
+    if (!G.active || !G.timerInterval) return;
+    if (document.hidden) {
+      // Store elapsed so far; interval will drift while hidden
+      G._hiddenAt = performance.now();
+    } else {
+      // Tab became visible again — correct the timer
+      if (G._hiddenAt) {
+        const elapsed = (performance.now() - G._hiddenAt) / 1000;
+        G.timerSecs = Math.max(0, G.timerSecs - elapsed);
+        G._hiddenAt = null;
+        renderTimer();
+        if (G.timerSecs <= 0) { stopTimer(); onTimeout(); }
+      }
+    }
+  });
 };
 
 // ════════════════════════════════════════════════════════
@@ -837,27 +823,32 @@ function nextWord() {
   G.used.push(G.word);
 
   G.row = 0; G.col = 0; G.maxRows = 6;
-  G.guess = []; G.active = true;
+  G.guess = Array(5).fill('');
+  G.active = true;
   G.lifelines = {extra:false,reveal:false,time:false,definition:false};
   G.lifelinePenalty = 0;
   G.revealedIdx = [];
 
   G.wordNum++;
   resetLifelineUI();
+  resetKeyboard();      // FIX: clear keyboard colours between words
   buildGrid();
   clearMsg();
+  hideBanner();
   updateHeader();
   startTimer();
 }
 
 // ════════════════════════════════════════════════════════
-//  TIMER
+//  TIMER  — uses visibilitychange to stay accurate on tab switch
 // ════════════════════════════════════════════════════════
 function startTimer() {
   stopTimer();
   G.timerSecs = WORD_MAX_TIME;
+  G._hiddenAt = null;
   renderTimer();
   G.timerInterval = setInterval(() => {
+    if (document.hidden) return; // skip ticks while hidden; corrected on reveal
     G.timerSecs -= 0.1;
     if (G.timerSecs <= 0) {
       G.timerSecs = 0;
@@ -878,16 +869,13 @@ function renderTimer() {
   const s = Math.ceil(G.timerSecs);
   const mins = Math.floor(s / 60);
   const secs = s % 60;
-  const display = mins + ':' + String(secs).padStart(2,'0');
-  const numEl = document.getElementById('timer-num');
-  const barEl = document.getElementById('timer-bar');
-  numEl.textContent = display;
+  document.getElementById('timer-num').textContent = mins + ':' + String(secs).padStart(2,'0');
   const pct = Math.max(0, (G.timerSecs / WORD_MAX_TIME) * 100);
-  barEl.style.width = pct + '%';
+  document.getElementById('timer-bar').style.width = pct + '%';
   const warn = G.timerSecs < 30;
   const hot  = G.timerSecs < 15;
-  numEl.className = 'timer-num' + (hot?' hot':warn?' warn':'');
-  barEl.className  = 'timer-bar'  + (hot?' hot':warn?' warn':'');
+  document.getElementById('timer-num').className = 'timer-num' + (hot?' hot':warn?' warn':'');
+  document.getElementById('timer-bar').className  = 'timer-bar'  + (hot?' hot':warn?' warn':'');
 }
 
 // ════════════════════════════════════════════════════════
@@ -930,9 +918,17 @@ function buildKeyboard() {
   });
 }
 
+// FIX: reset all key colours at start of each new word
+function resetKeyboard() {
+  document.querySelectorAll('.key').forEach(k => {
+    k.classList.remove('correct','present','absent');
+  });
+}
+
 function updateKeyboard(guess, result) {
   const pri = {correct:3,present:2,absent:1};
   guess.forEach((l,i) => {
+    if (!l) return;
     const k = document.getElementById('key-'+l);
     if (!k) return;
     const cur = k.classList.contains('correct')?'correct':k.classList.contains('present')?'present':k.classList.contains('absent')?'absent':null;
@@ -949,7 +945,6 @@ function updateKeyboard(guess, result) {
 function onKeyDown(e) {
   if (!G.active) return;
   if (document.querySelector('.screen.active')?.id !== 'game') return;
-  if (document.getElementById('def-popup').classList.contains('show')) return;
   if (e.key === 'Enter') handleKey('ENTER');
   else if (e.key === 'Backspace') handleKey('⌫');
   else if (/^[a-zA-Z]$/.test(e.key)) handleKey(e.key.toUpperCase());
@@ -958,21 +953,24 @@ function onKeyDown(e) {
 function handleKey(k) {
   if (!G.active) return;
   if (k === '⌫') {
-    if (G.col > 0) {
-      G.col--;
-      // don't delete a hint-revealed tile
-      if (G.revealedIdx.includes(G.col)) { G.col++; return; }
-      G.guess.pop();
-      const t = tile(G.row, G.col);
+    // Walk backwards to find last deletable (non-revealed, non-empty) slot
+    let del = G.col - 1;
+    while (del >= 0 && G.revealedIdx.includes(del)) del--;
+    if (del >= 0 && G.guess[del]) {
+      G.guess[del] = '';
+      const t = tile(G.row, del);
       t.textContent = ''; t.classList.remove('filled');
+      G.col = del;
     }
   } else if (k === 'ENTER') {
     submitGuess();
   } else if (G.col < 5) {
+    G.guess[G.col] = k;
     const t = tile(G.row, G.col);
     t.textContent = k; t.classList.add('filled');
-    G.guess.push(k);
     G.col++;
+    // Skip ahead past any pre-revealed slots
+    while (G.col < 5 && G.revealedIdx.includes(G.col)) G.col++;
   }
 }
 
@@ -980,30 +978,53 @@ function handleKey(k) {
 //  SUBMIT
 // ════════════════════════════════════════════════════════
 function submitGuess() {
-  if (G.col < 5) { setMsg('Not enough letters'); shakeRow(G.row); return; }
-  const guess = [...G.guess];
+  // Build clean 5-letter array from sparse guess state
+  const guess = Array(5).fill('').map((_, i) => G.guess[i] || '');
+  const filledCount = guess.filter(l => l !== '').length;
+  if (filledCount < 5) { setMsg('Not enough letters'); shakeRow(G.row); return; }
+
   const result = evaluate(guess, G.word);
   revealRow(G.row, guess, result, () => {
     updateKeyboard(guess, result);
-    if (result.every(r => r==='correct')) {
-      onWin(guess);
+    if (result.every(r => r === 'correct')) {
+      onWin();
     } else {
-      G.row++; G.col = 0; G.guess = [];
+      G.row++;
+      G.col = 0;
+      G.guess = Array(5).fill('');
+      G.revealedIdx = [];
       if (G.row >= G.maxRows) onLoss();
     }
   });
 }
 
+// ════════════════════════════════════════════════════════
+//  EVALUATE — hardened two-pass Wordle logic
+// ════════════════════════════════════════════════════════
 function evaluate(guess, word) {
   const res = Array(5).fill('absent');
   const wArr = word.split('');
-  const gArr = [...guess];
-  const used = Array(5).fill(false);
-  for (let i=0;i<5;i++) if (gArr[i]===wArr[i]) { res[i]='correct'; used[i]=true; gArr[i]=null; }
-  for (let i=0;i<5;i++) {
-    if (gArr[i]===null) continue;
-    for (let j=0;j<5;j++) {
-      if (!used[j] && gArr[i]===wArr[j]) { res[i]='present'; used[j]=true; break; }
+  const gArr = guess.map(l => l || '');
+  const wordUsed  = Array(5).fill(false);
+  const guessUsed = Array(5).fill(false);
+
+  // Pass 1: exact (correct) matches
+  for (let i = 0; i < 5; i++) {
+    if (gArr[i] === wArr[i]) {
+      res[i] = 'correct';
+      wordUsed[i] = true;
+      guessUsed[i] = true;
+    }
+  }
+  // Pass 2: present (wrong position) — consume each word letter at most once
+  for (let i = 0; i < 5; i++) {
+    if (guessUsed[i] || !gArr[i]) continue;
+    for (let j = 0; j < 5; j++) {
+      if (!wordUsed[j] && gArr[i] === wArr[j]) {
+        res[i] = 'present';
+        wordUsed[j] = true;
+        break;
+      }
     }
   }
   return res;
@@ -1011,23 +1032,23 @@ function evaluate(guess, word) {
 
 function revealRow(r, guess, result, cb) {
   const delay = 340;
-  result.forEach((res,i) => {
+  result.forEach((res, i) => {
     setTimeout(() => {
-      const t = tile(r,i);
+      const t = tile(r, i);
       t.classList.add('flip');
       setTimeout(() => {
         t.classList.remove('correct','present','absent','hint-revealed');
         t.classList.add(res);
       }, 170);
-      if (i===4) setTimeout(cb, delay);
-    }, i*delay);
+      if (i === 4) setTimeout(cb, delay);
+    }, i * delay);
   });
 }
 
 // ════════════════════════════════════════════════════════
 //  WIN / LOSS / TIMEOUT
 // ════════════════════════════════════════════════════════
-function onWin(guess) {
+function onWin() {
   stopTimer();
   G.active = false;
   G.streak++;
@@ -1037,7 +1058,7 @@ function onWin(guess) {
   const timeLeft     = Math.floor(G.timerSecs);
   const basePoints   = 100;
   const attemptBonus = attemptsLeft * 50;
-  const timeBonus    = timeLeft;
+  const timeBonus    = timeLeft;        // 1 pt per second remaining
   const raw          = basePoints + attemptBonus + timeBonus - G.lifelinePenalty;
   const wordScore    = Math.max(0, raw);
   G.score += wordScore;
@@ -1072,7 +1093,7 @@ async function endGame(timedOut) {
   stopTimer();
   const goTitle = document.getElementById('go-title');
   goTitle.textContent = timedOut ? 'TIME\nUP' : 'GAME\nOVER';
-  goTitle.className = 'go-title' + (timedOut?' timeout':'');
+  goTitle.className = 'go-title' + (timedOut ? ' timeout' : '');
   document.getElementById('go-word').innerHTML = `The word was <span>${G.word}</span>`;
   document.getElementById('go-score').textContent = G.score;
   document.getElementById('go-words').textContent = G.wordNum - 1;
@@ -1089,42 +1110,54 @@ function useLifeline(type) {
   if (!G.active) return;
   if (G.lifelines[type]) { toast('Already used this word!'); return; }
   G.lifelines[type] = true;
-  G.lifelinePenalty += 50;
+  const cost = LL_COST[type];
+  G.lifelinePenalty += cost;
 
   const btnId = {extra:'ll-extra',reveal:'ll-reveal',time:'ll-time',definition:'ll-def'}[type];
-  const btn = document.getElementById(btnId);
-  btn.disabled = true;
+  document.getElementById(btnId).disabled = true;
 
   if (type === 'extra') {
     addGridRow(G.maxRows);
     G.maxRows++;
-    toast('+1 guess row added  −50 pts');
+    toast(`+1 guess row added  −${cost} pts`);
 
   } else if (type === 'reveal') {
     const unrevealed = [0,1,2,3,4].filter(i => !G.revealedIdx.includes(i));
-    if (!unrevealed.length) { toast('All letters already revealed'); G.lifelines[type]=false; btn.disabled=false; G.lifelinePenalty-=50; return; }
-    const idx = unrevealed[Math.floor(Math.random()*unrevealed.length)];
+    if (!unrevealed.length) {
+      toast('All letters already revealed');
+      G.lifelines[type] = false;
+      document.getElementById(btnId).disabled = false;
+      G.lifelinePenalty -= cost;
+      return;
+    }
+    const idx = unrevealed[Math.floor(Math.random() * unrevealed.length)];
     G.revealedIdx.push(idx);
     const t = tile(G.row, idx);
     t.textContent = G.word[idx];
     t.classList.add('filled','hint-revealed');
-    // Inject into guess array at right position
-    while (G.guess.length <= idx) G.guess.push(null);
+    // Place letter in guess array
     G.guess[idx] = G.word[idx];
-    // advance col past revealed if needed
-    if (G.col === idx) G.col = idx + 1;
-    toast(`Position ${idx+1} = ${G.word[idx]}  −50 pts`);
+    // Advance col to first empty non-revealed slot
+    G.col = 0;
+    while (G.col < 5 && (G.revealedIdx.includes(G.col) || G.guess[G.col])) G.col++;
+    toast(`Position ${idx+1} = ${G.word[idx]}  −${cost} pts`);
 
   } else if (type === 'time') {
     G.timerSecs = Math.min(G.timerSecs + 60, WORD_MAX_TIME);
     renderTimer();
-    toast('+60 seconds  −50 pts');
+    toast(`+60 seconds  −${cost} pts`);
 
   } else if (type === 'definition') {
-    document.getElementById('def-text').textContent = G.definition;
-    document.getElementById('def-popup').classList.add('show');
-    toast('Definition revealed  −50 pts');
+    // Show inline banner — stays visible until next word
+    document.getElementById('def-banner-text').textContent = G.definition;
+    document.getElementById('def-banner').classList.add('show');
+    toast(`Definition revealed  −${cost} pts`);
   }
+}
+
+function hideBanner() {
+  document.getElementById('def-banner').classList.remove('show');
+  document.getElementById('def-banner-text').textContent = '';
 }
 
 function resetLifelineUI() {
@@ -1135,22 +1168,20 @@ function resetLifelineUI() {
   });
 }
 
-function closeDefPopup() {
-  document.getElementById('def-popup').classList.remove('show');
-}
-
 // ════════════════════════════════════════════════════════
 //  SCOREBOARD — Google Sheets
+//  FIX: load uses a JSONP-style approach via script tag to
+//  avoid CORS issues with Apps Script redirects on GET
 // ════════════════════════════════════════════════════════
 async function submitScore() {
   if (!SHEETS_URL) return;
   try {
     await fetch(SHEETS_URL, {
-      method:'POST',
-      mode:'no-cors',
-      headers:{'Content-Type':'application/json'},
+      method: 'POST',
+      mode: 'no-cors',
+      headers: {'Content-Type':'application/json'},
       body: JSON.stringify({
-        action:'submit',
+        action: 'submit',
         name: G.player,
         score: G.score,
         words: G.wordNum - 1,
@@ -1162,13 +1193,27 @@ async function submitScore() {
   } catch(e) { console.warn('Score submit failed', e); }
 }
 
-async function loadScores() {
-  if (!SHEETS_URL) return null;
-  try {
-    const r = await fetch(SHEETS_URL + '?action=scores', {cache:'no-store'});
-    const data = await r.json();
-    return data;
-  } catch(e) { return null; }
+function loadScoresViaScript() {
+  return new Promise((resolve) => {
+    // Remove any previous callback/script
+    if (window.__nurdleCb) { delete window.__nurdleCb; }
+    const existing = document.getElementById('sb-script');
+    if (existing) existing.remove();
+
+    const timeout = setTimeout(() => resolve(null), 8000);
+
+    window.__nurdleCb = (data) => {
+      clearTimeout(timeout);
+      delete window.__nurdleCb;
+      resolve(data);
+    };
+
+    const script = document.createElement('script');
+    script.id = 'sb-script';
+    script.src = SHEETS_URL + '?action=scores&callback=__nurdleCb&_=' + Date.now();
+    script.onerror = () => { clearTimeout(timeout); resolve(null); };
+    document.head.appendChild(script);
+  });
 }
 
 let sbFrom = 'splash';
@@ -1177,18 +1222,14 @@ async function goScoreboard(from) {
   show('scoreboard');
   const el = document.getElementById('sb-content');
   el.innerHTML = '<div class="sb-loading">Loading scores...</div>';
-  const scores = await loadScores();
+  const scores = await loadScoresViaScript();
   renderScoreboard(scores);
 }
 
 function renderScoreboard(scores) {
   const el = document.getElementById('sb-content');
-  if (!SHEETS_URL) {
-    el.innerHTML = '<div class="sb-error">Scoreboard not configured.<br>Add your Apps Script URL to the SHEETS_URL variable in the game code.</div>';
-    return;
-  }
   if (!scores) {
-    el.innerHTML = '<div class="sb-error">Could not load scores.<br>Check your Apps Script URL is correct and the script is deployed.</div>';
+    el.innerHTML = '<div class="sb-error">Could not load scores.<br>Check your Apps Script is deployed and the URL is correct.</div>';
     return;
   }
   if (!scores.length) {
@@ -1218,9 +1259,7 @@ function leaveSB() { show(sbFrom); }
 // ════════════════════════════════════════════════════════
 //  PLAY AGAIN
 // ════════════════════════════════════════════════════════
-function playAgain() {
-  pickCategories();
-}
+function playAgain() { pickCategories(); }
 
 // ════════════════════════════════════════════════════════
 //  UTILS
@@ -1235,7 +1274,7 @@ function setMsg(m) { document.getElementById('game-msg').textContent = m; }
 function clearMsg() { document.getElementById('game-msg').textContent = ''; }
 
 function shakeRow(r) {
-  for (let c=0;c<5;c++) {
+  for (let c = 0; c < 5; c++) {
     const t = tile(r,c);
     t.classList.remove('shake');
     void t.offsetWidth;
